@@ -1,12 +1,12 @@
 (function() {
-    var CsvMerger = require('./csv-merger');
-    var OptionsParser = require('./merge-options-parser');
+    var CsvConcat = require('./csv-concat');
+    var OptionsParser = require('./csv-concat-options-parser');
 
     var options = new OptionsParser().getOptions();
 
-    var csvMerger = new CsvMerger(options);
+    var csvConcat = new CsvConcat(options);
 
-    csvMerger.mergeFiles()
+    csvConcat.concatFiles()
         .then(
             function() {
                 console.log('Files successfully merged');

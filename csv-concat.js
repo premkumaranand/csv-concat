@@ -17,7 +17,7 @@ module.exports = function(options) {
         //Ignore files with these names
         ignore: [],
 
-        //Destination file where the merged CSVs are placed into
+        //Destination file where the concatd CSVs are placed into
         dest: '',
 
         //Generate a prefix for the keys from the folder structure and the file name?
@@ -37,7 +37,7 @@ module.exports = function(options) {
         });
     }
 
-    function mergeFiles(resolve, reject) {
+    function concatFiles(resolve, reject) {
         var outputStream = fs.createWriteStream(
             options.dest,
             {
@@ -75,11 +75,11 @@ module.exports = function(options) {
         });
     }
 
-    function mergeFilesPromise() {
-        return new Promise(mergeFiles);
+    function concatFilesPromise() {
+        return new Promise(concatFiles);
     }
 
     return {
-        mergeFiles: mergeFilesPromise
+        concatFiles: concatFilesPromise
     };
 }
