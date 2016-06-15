@@ -1,5 +1,5 @@
 {
-  "name": "csv-concat",
+  "name": "csv-concat-ext",
   "version": "1.0.0",
   "description": "",
   "main": "csv-concat.js",
@@ -8,7 +8,8 @@
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
+  "devDependencies": {},
+  "dependencies": {
     "argv": "0.0.2",
     "csv-parse": "^1.1.1",
     "fs": "0.0.2",
