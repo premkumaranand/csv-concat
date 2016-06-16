@@ -2,7 +2,6 @@ module.exports = function(options) {
 
     var extend = require('jquery-extend');
     var fs = require('fs');
-    var glob = require('glob');
     var parseCsv = require('csv-parse/lib/sync');
     var CsvFileParser = require('./csv-file-parser');
 
@@ -37,6 +36,22 @@ module.exports = function(options) {
         });
     }
 
+    function getFiles (dir, extension, files_){
+        var files_ = files_ || [];
+        var files = fs.readdirSync(dir);
+        for (var i in files){
+            var name = dir + '/' + files[i];
+            if (fs.statSync(name).isDirectory()){
+                getFiles(name, extension, files_);
+            } else {
+                if (name.indexOf("." + extension)) {
+                    files_.push(name);
+                }
+            }
+        }
+        return files_;
+    }
+
     function concatFiles(resolve, reject) {
         var outputStream = fs.createWriteStream(
             options.dest,
@@ -46,33 +61,24 @@ module.exports = function(options) {
 
         outputStream.write('\n');
 
-        glob( options.src + '/**/*.csv', function( err, files ) {
+        var files = getFiles(options.src, "csv");
 
-            if (err) {
-                if (reject instanceof Function) {
-                    reject(err);
-                }
+        var scannableFiles = getScannableFiles(files);
 
-                return false;
-            }
+        scannableFiles.forEach(function(file) {
+            var csvFileParser = new CsvFileParser(file, options, parseCsv, fs);
+            var records = csvFileParser.getRecords();
 
-            var scannableFiles = getScannableFiles(files);
-
-            scannableFiles.forEach(function(file) {
-                var csvFileParser = new CsvFileParser(file, options, parseCsv, fs);
-                var records = csvFileParser.getRecords();
-
-                records.forEach(function(recordIter) {
-                    outputStream.write(recordIter.join(options.delimiter) + '\n');
-                });
+            records.forEach(function(recordIter) {
+                outputStream.write(recordIter.join(options.delimiter) + '\n');
             });
-
-            outputStream.end();
-
-            if (resolve instanceof Function) {
-                resolve();
-            }
         });
+
+        outputStream.end();
+
+        if (resolve instanceof Function) {
+            resolve();
+        }
     }
 
     function concatFilesPromise() {
