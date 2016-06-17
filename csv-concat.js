@@ -46,7 +46,7 @@ module.exports = function(options) {
             if (fs.statSync(name).isDirectory()){
                 getFiles(name, extension, files_);
             } else {
-                if (name.indexOf("." + extension)) {
+                if (name.indexOf("." + extension) !== -1) {
                     files_.push(name);
                 }
             }
