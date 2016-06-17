@@ -16,11 +16,13 @@ module.exports = function(options) {
         //Ignore files with these names
         ignore: [],
 
-        //Destination file where the concatd CSVs are placed into
+        //Destination file where the concatenated CSVs are placed into
         dest: '',
 
         //Generate a prefix for the keys from the folder structure and the file name?
-        addPrefixToKey: false
+        addPrefixToKey: false,
+
+        verbose: false
     };
 
     options = extend({}, defaultOptions, options);
@@ -66,12 +68,24 @@ module.exports = function(options) {
         var scannableFiles = getScannableFiles(files);
 
         scannableFiles.forEach(function(file) {
-            var csvFileParser = new CsvFileParser(file, options, parseCsv, fs);
-            var records = csvFileParser.getRecords();
 
-            records.forEach(function(recordIter) {
-                outputStream.write(recordIter.join(options.delimiter) + '\n');
-            });
+            if (options.verbose) {
+                console.log("   ");
+                console.log("Reading file: " + file);
+            }
+
+            try {
+                var csvFileParser = new CsvFileParser(file, options, parseCsv, fs);
+                var records = csvFileParser.getRecords();
+
+                records.forEach(function (recordIter) {
+                    outputStream.write(recordIter.join(options.delimiter) + '\n');
+                });
+            } catch (e) {
+                if (options.verbose) {
+                    console.log("- Failed parsing a record: " + e);
+                }
+            }
         });
 
         outputStream.end();
