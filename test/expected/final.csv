@@ -1,0 +1,7 @@
+
+sth1|Something-1 from sub/test
+sth2|Something-1 from sub/test
+test1-sth1|string sth1 from test1.csv
+test1-sth2|string sth2 from test1.csv
+test2-sth1|string sth1 from test2.csv
+test2-sth2|string sth2 from test2.csv

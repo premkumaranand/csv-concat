@@ -10,8 +10,8 @@ module.exports = function(options) {
         //What are the columns delimited by?
         delimiter: ',',
 
-        //Source directory where the csv files are
-        src: '',
+        //Array: Source directories where the csv files are and/or list of files
+        src: [],
 
         //Ignore files with these names
         ignore: [],
@@ -40,6 +40,7 @@ module.exports = function(options) {
 
     function getFiles (dir, extension, files_){
         var files_ = files_ || [];
+
         var files = fs.readdirSync(dir);
         for (var i in files){
             var name = dir + '/' + files[i];
@@ -63,7 +64,17 @@ module.exports = function(options) {
 
         outputStream.write('\n');
 
-        var files = getFiles(options.src, "csv");
+        var files = [];
+
+        for (var i in options.src) {
+            var name = options.src[i];
+
+            if (!fs.statSync(name).isDirectory()){
+                files.push(name);
+            } else {
+                files = getFiles(name, "csv", files);
+            }
+        }
 
         var scannableFiles = getScannableFiles(files);
 
@@ -78,6 +89,10 @@ module.exports = function(options) {
                 var csvFileParser = new CsvFileParser(file, options, parseCsv, fs);
                 var records = csvFileParser.getRecords();
 
+                if (options.verbose) {
+                    console.log("  - Writing " + records.length + " lines into " + options.dest);
+                }
+
                 records.forEach(function (recordIter) {
                     outputStream.write(recordIter.join(options.delimiter) + '\n');
                 });
@@ -85,11 +100,21 @@ module.exports = function(options) {
                 if (options.verbose) {
                     console.log("- Failed parsing a record: " + e);
                 }
+
+                if (reject instanceof Function) {
+                    reject("Failed parsing a record in file: " + file + "\nOriginal error message: " + e);
+                    outputStream.end();
+                    return;
+                }
             }
         });
-
+        
         outputStream.end();
 
+        if (options.verbose) {
+            console.log("    ");
+            console.log("Concatenation written into: " + options.dest);
+        }
         if (resolve instanceof Function) {
             resolve();
         }
