@@ -27,7 +27,7 @@ exports.testWithoutPrefix = function(test) {
     var csvConcat = new CsvConcat({
         delimiter: '|',
         src: ['test/fixtures/sub', 'test/fixtures/test1.csv', 'test/fixtures/test2.csv'],
-        dest: process.cwd() + '/test/tmp/final.csv',
+        dest: 'test/tmp/final.csv',
         verbose: true
     });
 

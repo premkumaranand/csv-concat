@@ -4,6 +4,7 @@ module.exports = function(options) {
     var fs = require('fs');
     var parseCsv = require('csv-parse/lib/sync');
     var CsvFileParser = require('./csv-file-parser');
+    var mkdirp = require('mkdirp');
 
     var defaultOptions = {
 
@@ -55,15 +56,26 @@ module.exports = function(options) {
         return files_;
     }
 
+    function createDestDir(destFilePath) {
+        if (typeof destFilePath !== 'string') {
+            throw new Error("Illegal argument destFilePath: " + destFilePath + ". It actually is a " + (typeof destFilePath));
+        }
+
+        var dirPath = require('path').parse(destFilePath).dir;
+        mkdirp.sync(dirPath);
+    }
+
+    function log(message, forVerbose) {
+        if ((forVerbose && options.verbose) || !forVerbose) {
+            console.log(message);
+        }
+    }
+
+    function logV(message) {
+        log(message, true);
+    }
+
     function concatFiles(resolve, reject) {
-        var outputStream = fs.createWriteStream(
-            options.dest,
-            {
-                flags: 'a'
-            });
-
-        outputStream.write('\n');
-
         var files = [];
 
         for (var i in options.src) {
@@ -78,43 +90,44 @@ module.exports = function(options) {
 
         var scannableFiles = getScannableFiles(files);
 
-        scannableFiles.forEach(function(file) {
+        createDestDir(options.dest);
 
-            if (options.verbose) {
-                console.log("   ");
-                console.log("Reading file: " + file);
+        try {
+            scannableFiles.forEach(function (file) {
+                logV("\nReading file: " + file);
+
+                var lines = [];
+
+                try {
+                    var csvFileParser = new CsvFileParser(file, options, parseCsv, fs);
+                    var records = csvFileParser.getRecords();
+
+                    logV("  - Writing " + records.length + " lines into " + options.dest);
+
+                    records.forEach(function (recordIter) {
+                        lines.push(recordIter.join(options.delimiter));
+                    });
+                } catch (e) {
+                    logV("- Failed parsing a record: " + e);
+                    throw e;
+                }
+
+                try {
+                    fs.appendFileSync(options.dest, '\n' + lines.join('\n'));
+                } catch (e) {
+                    logV("- Failed writing to the file: " + options.dest + ". Exception: " + e);
+                    throw e;
+                }
+            });
+        } catch (e) {
+            if (reject instanceof Function) {
+                reject("Concatenation failed.");
+                return;
             }
-
-            try {
-                var csvFileParser = new CsvFileParser(file, options, parseCsv, fs);
-                var records = csvFileParser.getRecords();
-
-                if (options.verbose) {
-                    console.log("  - Writing " + records.length + " lines into " + options.dest);
-                }
-
-                records.forEach(function (recordIter) {
-                    outputStream.write(recordIter.join(options.delimiter) + '\n');
-                });
-            } catch (e) {
-                if (options.verbose) {
-                    console.log("- Failed parsing a record: " + e);
-                }
-
-                if (reject instanceof Function) {
-                    reject("Failed parsing a record in file: " + file + "\nOriginal error message: " + e);
-                    outputStream.end();
-                    return;
-                }
-            }
-        });
-        
-        outputStream.end();
-
-        if (options.verbose) {
-            console.log("    ");
-            console.log("Concatenation written into: " + options.dest);
         }
+
+        logV("\nConcatenation written into: " + options.dest);
+
         if (resolve instanceof Function) {
             resolve();
         }
@@ -127,4 +140,4 @@ module.exports = function(options) {
     return {
         concatFiles: concatFilesPromise
     };
-}
+};

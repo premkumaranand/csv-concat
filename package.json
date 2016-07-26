@@ -13,6 +13,7 @@
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-nodeunit": "^1.0.0",
     "jquery-extend": "^2.0.3",
+    "mkdirp": "^0.5.1",
     "nodeunit": "^0.9.1"
   },
   "dependencies": {
