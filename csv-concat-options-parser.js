@@ -9,9 +9,9 @@ module.exports = function() {
             {
                 name: 'src',
                 short: 's',
-                type: 'string',
-                description: 'Directory path that has the CSV files',
-                example: 'csv-concat-cli.js -s ~/somewhere/sub'
+                type: 'list',
+                description: 'List of directory paths or individual file paths of the CSV files',
+                example: 'csv-concat-cli.js -s ~/somewhere/sub -s ~/another/file.csv'
             },
             {
                 name: 'delimiter',
