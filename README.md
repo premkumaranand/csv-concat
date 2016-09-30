@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/premkumaranand/csv-concat.svg?branch=master)](https://travis-ci.org/premkumaranand/csv-concat)
+
 # csv-concat
 An npm module to concat csv files exclusively
 
